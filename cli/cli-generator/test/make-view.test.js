@@ -51,6 +51,7 @@ describe("MakeView Node CLI", {}, () => {
             assert.ok(fs.existsSync(twig), 'View file not created')
         } catch (err) {
             console.error('❌make-view.test.js failed:', err.message);
+
             process.exit(1);
         } finally {
             if (fs.existsSync(twig)) fs.unlinkSync(twig)

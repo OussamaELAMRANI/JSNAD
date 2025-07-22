@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'url'
 
-// const __filename = fileURLToPath(import.meta.url);
-const __dirname = import.meta.dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename)
 
 export function makeView(name, engine = '--twig') {
     if (!name) return console.error('❌ Please provide a view name.');
@@ -16,7 +16,6 @@ export function makeView(name, engine = '--twig') {
     try {
         const targetPath = `./${name}.${engine.slice(2)}`;
         const view = baseFile[engine]();
-        // console.log({view})
         if (fs.existsSync(view)) {
             const content = fs.readFileSync(view, {encoding: 'utf-8'})
             fs.writeFileSync(targetPath, content.replace(/{{name}}/g, name));
@@ -27,5 +26,3 @@ export function makeView(name, engine = '--twig') {
         process.exit(1)
     }
 }
-
-// makeView('test', '--twig')
