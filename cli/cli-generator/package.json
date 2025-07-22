@@ -1,0 +1,15 @@
+{
+  "name": "cli-generator",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "node test"
+  },
+  "bin": {
+    "gen": "./src/index.js"
+  },
+  "keywords": [],
+  "author": "Oussama EL AMRANI",
+  "license": "ISC"
+}
