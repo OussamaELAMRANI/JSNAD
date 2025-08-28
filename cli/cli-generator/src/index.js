@@ -25,7 +25,7 @@ Examples:
 
 switch (cmd) {
     case 'component':
-        makeComponent('')
+        makeComponent(args[0])
         break;
     case 'view':
         makeView(args[0], args[1])
