@@ -1,0 +1,19 @@
+{
+  "name": "idm",
+  "version": "1.0.0",
+  "description": "Download manager from HTTP using parallel execution",
+  "main": "app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsx src/app.ts",
+    "wtach": "tsx --watch src/app.ts"
+  },
+  "type": "module",
+  "author": "EL AMRANI Oussama",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
