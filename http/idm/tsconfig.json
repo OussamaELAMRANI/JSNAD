@@ -7,13 +7,12 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
     "types": [
       "node"
     ],
-    "baseUrl": "./src/",
-    "paths": {
-      "@/": "./src/**/*.ts"
-    }
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] }
   },
   "include": [
     "src/**/*.ts"

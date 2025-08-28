@@ -3,7 +3,7 @@ import * as http from "node:http";
 import {PassThrough} from 'stream'
 import fs from "node:fs";
 import path from "node:path";
-import {__dirname, dist} from "config.js";
+import {__dirname, dist} from "./config.ts";
 
 export function getHttpClient(url: string) {
     return url.startsWith('https') ? https : http

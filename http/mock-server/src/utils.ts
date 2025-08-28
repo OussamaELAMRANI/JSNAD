@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {NotFoundException} from "./Exceptions.js";
-import {DELAY_PER_CHUNK} from "./config.js";
+import {NotFoundException} from "./Exceptions.ts";
+import {DELAY_PER_CHUNK} from "./config.ts";
 import {ReadStream} from "node:fs";
 import {ServerResponse} from "node:http";
 

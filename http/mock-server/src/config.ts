@@ -19,7 +19,7 @@ for (const arg of args) {
 
 // === CONFIG ===
 export const KEEP_ALIVE = parsedArgs?.alive || false
-export const SPEED_LIMIT_KBPS = 200 // 200KB/s
+export const SPEED_LIMIT_KBPS = parsedArgs.limit ?? 1024 // 1Mb/s
 export const CHUNK_SIZE = 64 * 1024 // 64 KB
 export const DELAY_PER_CHUNK = Math.ceil((CHUNK_SIZE / (SPEED_LIMIT_KBPS * 1024)) * 1000)
 

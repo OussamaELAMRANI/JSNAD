@@ -1,7 +1,7 @@
-import {composeFile, fetchFileSize} from "./utils.js";
-import {__dirname, CONCURRENCY, dist, host} from "./config.js";
 import * as path from "node:path";
-import {downloadChunk} from "download-manager.js";
+import {composeFile, fetchFileSize} from "./utils.ts";
+import {__dirname, CONCURRENCY, dist, host} from "./config.ts";
+import {downloadChunk} from "./download-manager.ts";
 
 
 async function main() {

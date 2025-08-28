@@ -1,8 +1,8 @@
 import http, {OutgoingHttpHeaders} from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
-import {CHUNK_SIZE, DELAY_PER_CHUNK, KEEP_ALIVE, PORT, PUBLIC_DIR, setContentType, SPEED_LIMIT_KBPS} from "./config.js";
-import {fileStats, handleHeaderRange, throatRequest} from "./utils.js";
+import {CHUNK_SIZE, DELAY_PER_CHUNK, KEEP_ALIVE, PORT, PUBLIC_DIR, setContentType, SPEED_LIMIT_KBPS} from "./config.ts";
+import {fileStats, handleHeaderRange, throatRequest} from "./utils.ts";
 
 
 const server = http.createServer(async (req, res) => {

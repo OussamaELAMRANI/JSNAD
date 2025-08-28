@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "serve": "tsx src/server.ts --alive",
-    "serve:watch": "tsx watch src/server.ts --alive"
+    "serve:watch": "tsx watch src/server.ts --alive --limit=2048"
   },
   "keywords": [],
   "author": "",

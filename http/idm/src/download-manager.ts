@@ -1,8 +1,8 @@
-import {__dirname, dist, host} from "config.js";
 import fs from "node:fs";
 import path from "node:path";
-import {downloadMonitor, getHttpClient} from "utils.js";
 import {pipeline} from "node:stream";
+import {dist, host} from "@/config.js";
+import {downloadMonitor, getHttpClient} from "@/utils.js";
 
 /**
  * Download function use single connection with the HTTP Server
