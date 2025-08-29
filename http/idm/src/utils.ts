@@ -1,9 +1,17 @@
 import * as https from "node:https";
 import * as http from "node:http";
 import {PassThrough} from 'stream'
-import fs from "node:fs";
+import {
+    createWriteStream,
+    existsSync,
+    readFileSync,
+    createReadStream,
+} from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import {__dirname, dist} from "./config.ts";
+import {createHash} from "node:crypto";
+import * as readline from "node:readline";
 
 export function getHttpClient(url: string) {
     return url.startsWith('https') ? https : http
@@ -58,24 +66,35 @@ function parseRangeHeader(range: string) {
     return matcher ? Number(matcher[1]) : null;
 }
 
-export function downloadMonitor(total: number, chunkIndex: any) {
+export function downloadMonitor(total: number, chunkIndex: number) {
     let downloaded = 0;
-    let startTime = Date.now();
-
+    const startTime = process.hrtime.bigint(); // high-precision start time
 
     return new PassThrough({
-        write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
+        write(chunk, _encoding, callback) {
             downloaded += chunk.length;
-            const percentage = Number((downloaded / total) * 100).toFixed(2)
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+            const now = process.hrtime.bigint(); // current high-precision time
+            const elapsedNs = now - startTime;
+            const elapsedSec = Number(elapsedNs) / 1_000_000_000;
+
+            const percent = ((downloaded / total) * 100).toFixed(2);
 
             process.stdout.write(
-                `\r🧩 Chunk ${chunkIndex}: ${percentage}% (${downloaded}/${total} bytes) - ${elapsed}s elapsed`
+                `\r🧩 Chunk ${chunkIndex}: ${percent}% (${downloaded}/${total} bytes) - ${elapsedSec.toFixed(2)}s`
             );
+
             this.push(chunk);
             callback();
         },
-    })
+        final(callback) {
+            const now = process.hrtime.bigint();
+            const elapsedNs = now - startTime;
+            const elapsedSec = Number(elapsedNs) / 1_000_000_000;
+            console.log(`\n✅ Chunk ${chunkIndex} finalized in ${elapsedSec.toFixed(2)}s`);
+            callback();
+        }
+    });
 }
 
 /**
@@ -85,15 +104,64 @@ export function downloadMonitor(total: number, chunkIndex: any) {
  * @param files
  */
 export function composeFile(outputPath: string, files: string[]) {
-    const output = fs.createWriteStream(outputPath)
+    const output = createWriteStream(outputPath)
 
     for (const file of files) {
         const filePath = path.join(__dirname, dist, file)
-        const data = fs.readFileSync(filePath)
+        const data = readFileSync(filePath)
         output.write(data)
-        fs.unlinkSync(filePath);
+        // unlinkSync(filePath);
     }
 
     output.end();
     console.log(`\n🎉 Merged file saved as ${outputPath}`);
+}
+
+
+export function calculateChecksum(filePath: string, algorithm: 'sha256' | 'md5' = 'sha256'): string {
+    const hash = createHash(algorithm);
+    const data = readFileSync(filePath);
+    hash.update(data);
+    return hash.digest('hex');
+}
+
+export async function checksumAppend(partPath: string) {
+    const dirPath = path.join(__dirname, dist);
+    const csvPath = path.join(dirPath, '.checksum.csv');
+
+    const line = `${partPath}\n`;
+    await fs.appendFile(csvPath, line, 'utf-8');
+
+    console.log(`📝 Appended checksum for ${partPath}`);
+}
+
+export async function loadChecksums() {
+    const csvPath = path.join(__dirname, dist, '.checksum.csv');
+    const result: Record<string, string> = {};
+
+    const content = await fs.readFile(csvPath, 'utf-8');
+    for (const line of content.trim().split('\n')) {
+        result[line] = '';
+    }
+
+    return result;
+}
+
+export async function hasChecksum(partPath: string): Promise<boolean> {
+    const csvPath = path.join(__dirname, dist, '.checksum.csv');
+    if (!existsSync(csvPath)) return false;
+    const fileStream = createReadStream(csvPath, {encoding: 'utf-8'});
+
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
+    for await (const line of rl) {
+        if (line === partPath) {
+            return true;
+        }
+    }
+
+    return false;
 }

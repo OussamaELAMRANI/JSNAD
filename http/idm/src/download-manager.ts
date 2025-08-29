@@ -1,8 +1,9 @@
-import fs from "node:fs";
+import {createWriteStream} from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import {pipeline} from "node:stream";
-import {dist, host} from "@/config.js";
-import {downloadMonitor, getHttpClient} from "@/utils.js";
+import {__dirname, dist, host} from "@/config.js";
+import {calculateChecksum, checksumAppend, downloadMonitor, getHttpClient, hasChecksum} from "@/utils.js";
 
 /**
  * Download function use single connection with the HTTP Server
@@ -14,7 +15,7 @@ import {downloadMonitor, getHttpClient} from "@/utils.js";
 async function download() {
     const url = new URL(host)
     const filename = url.pathname
-    const writeStream = fs.createWriteStream(path.join(__dirname, dist, filename))
+    const writeStream = createWriteStream(path.join(__dirname, dist, filename))
     const client = getHttpClient(host);
 
     const req = client.request(host, (res) => {
@@ -57,9 +58,14 @@ async function download() {
  *
  */
 export async function downloadChunk(url: string, start: number, end: number, index: number): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const client = getHttpClient(url);
         const {hostname, pathname} = new URL(url)
+        const partPath = `${pathname}-chunk-${index}.part`;
+        if (await hasChecksum(partPath)) {
+            console.log(`this Part: ${partPath} was skipped !`)
+            return resolve(partPath)
+        }
 
         const req = client.request(url, {
             hostname,
@@ -72,20 +78,20 @@ export async function downloadChunk(url: string, start: number, end: number, ind
             }
         }, (res) => {
 
-            const partPath = `${pathname}-chunk-${index}.part`;
             const out = path.join(__dirname, dist, partPath)
             const monitor = downloadMonitor(end - start + 1, index);
-            const fileStream = fs.createWriteStream(out);
+            const fileStream = createWriteStream(out);
 
-            pipeline(res, monitor, fileStream, err => {
+            pipeline(res, monitor, fileStream, (err) => {
                 if (err) {
                     console.log(err)
                     reject(err)
                 }
             })
 
-            fileStream.on('finish', () => {
+            fileStream.on('finish', async () => {
                 console.log(`\n✅ Chunk ${index} saved to ${partPath}`);
+                await checksumAppend(partPath)
                 resolve(partPath);
             });
 
